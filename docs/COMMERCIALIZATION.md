@@ -23,7 +23,7 @@ Recommended paid tiers:
 
 ## Recommended Product Name
 
-Working name: **RelayGrid AI**
+Working name: **Cotell AI**
 
 Tagline: **One reliable AI gateway for every model your team already uses.**
 
@@ -124,11 +124,11 @@ Minimum public pages:
 
 Suggested contact surface:
 
-- Support: `support@relaygrid.ai`
-- Sales: `sales@relaygrid.ai`
-- Billing: `billing@relaygrid.ai`
-- Security: `security@relaygrid.ai`
-- Abuse: `abuse@relaygrid.ai`
+- Support: `support@cotell.ai`
+- Sales: `sales@cotell.ai`
+- Billing: `billing@cotell.ai`
+- Security: `security@cotell.ai`
+- Abuse: `abuse@cotell.ai`
 - WhatsApp/phone for regional customers
 - GitHub issues for open-source/community support
 

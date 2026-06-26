@@ -1,11 +1,11 @@
 # Railway SaaS Production Plan
 
-RelayGrid AI should be deployed as a hosted SaaS gateway, not as the original
+Cotell AI should be deployed as a hosted SaaS gateway, not as the original
 single-user local app exposed to the internet.
 
 The product promise:
 
-> Customers pay for a plan, receive RelayGrid API keys, and can call an
+> Customers pay for a plan, receive Cotell API keys, and can call an
 > OpenAI-compatible endpoint. Their plan controls which model groups they can
 > use and how much monthly usage they receive.
 
@@ -18,14 +18,14 @@ Free access rule:
 
 Start with three Railway services:
 
-- `relaygrid-api`
+- `cotell-api`
   - Node/TypeScript API service.
   - Hosts checkout callbacks, Paystack webhooks, customer API-key issuance,
     model entitlement checks, and `/v1/*` proxy requests.
-- `relaygrid-postgres`
+- `cotell-postgres`
   - Railway PostgreSQL for production SaaS data: customers, plans, API keys,
     subscriptions, usage, and audit events.
-- `relaygrid-worker`
+- `cotell-worker`
   - Later service for catalog refreshes, payment reconciliation, email retries,
     and usage rollups.
 
@@ -65,7 +65,7 @@ internal unified key.
 
 1. User pays through Paystack.
 2. Paystack redirects and sends a webhook.
-3. `relaygrid-api` verifies the Paystack transaction.
+3. `cotell-api` verifies the Paystack transaction.
 4. The database marks the subscription/license active.
 5. Customer creates an API key in the portal.
 6. API key is stored hashed; raw key is shown once.

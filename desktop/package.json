@@ -1,7 +1,7 @@
 {
-  "name": "freellmapi-desktop",
+  "name": "cotell-desktop",
   "version": "0.4.1",
-  "description": "FreeLLMAPI menu-bar app — local OpenAI-compatible LLM router",
+  "description": "Cotell AI menu-bar app — local OpenAI-compatible LLM router",
   "private": true,
   "type": "module",
   "main": "build/main.mjs",

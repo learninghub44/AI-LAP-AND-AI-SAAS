@@ -1,4 +1,4 @@
--- RelayGrid AI SaaS schema.
+-- Cotell AI SaaS schema.
 -- Works on Supabase Postgres or Railway Postgres.
 -- Store secrets in the application environment, not in this database.
 

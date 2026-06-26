@@ -1,7 +1,7 @@
 import { getDb } from '../db/index.js';
 import { resolveProvider } from '../providers/index.js';
 import { decrypt } from '../lib/crypto.js';
-import type { Platform, KeyStatus } from '@freellmapi/shared/types.js';
+import type { Platform, KeyStatus } from '@cotell/shared/types.js';
 import { inferQuotaPoolKey } from './provider-quota.js';
 
 const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes

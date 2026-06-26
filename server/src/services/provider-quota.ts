@@ -8,7 +8,7 @@ import type {
   QuotaResetStrategy,
   ProviderQuotaObservation,
   ProviderQuotaState,
-} from '@freellmapi/shared/types.js';
+} from '@cotell/shared/types.js';
 
 export interface QuotaObservationContext {
   platform: Platform;

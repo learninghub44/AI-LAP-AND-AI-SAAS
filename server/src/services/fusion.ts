@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { ChatMessage, ChatCompletionResponse, TokenUsage } from '@freellmapi/shared/types.js';
+import type { ChatMessage, ChatCompletionResponse, TokenUsage } from '@cotell/shared/types.js';
 import {
   routePinnedModel, routeRequest, getOrderedFusionChain, resolveFusionCandidate,
   recordRateLimitHit, recordSuccess, type RouteResult, type FusionCandidate,

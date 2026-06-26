@@ -9,7 +9,7 @@ import type {
   ChatToolChoice,
   ChatContent,
   ChatContentBlock,
-} from '@freellmapi/shared/types.js';
+} from '@cotell/shared/types.js';
 import { routeRequest, recordRateLimitHit, recordSuccess, type RouteResult } from '../services/router.js';
 import {
   recordRequest, recordTokens, setCooldown, getCooldownDurationForLimit,

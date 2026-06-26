@@ -61,7 +61,7 @@ export function setClaudeModelMap(input: unknown): AnthropicModelMap {
 // Claude alias at all (a concrete catalog id meant to pin directly).
 export function classifyClaudeFamily(model?: string): ClaudeFamily | null {
   const m = (model ?? '').trim().toLowerCase();
-  if (!m || m === 'auto' || m === 'default' || m === 'freellmapi-auto') return 'default';
+  if (!m || m === 'auto' || m === 'default' || m === 'cotell-auto') return 'default';
   if (m.includes('opus')) return 'opus';
   if (m.includes('sonnet')) return 'sonnet';
   if (m.includes('haiku')) return 'haiku';

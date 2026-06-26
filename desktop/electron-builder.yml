@@ -1,5 +1,5 @@
-appId: com.freellmapi.desktop
-productName: FreeLLMAPI
+appId: com.cotell.desktop
+productName: Cotell AI
 directories:
   output: dist-electron
 files:

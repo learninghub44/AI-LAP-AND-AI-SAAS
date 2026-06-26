@@ -5,7 +5,7 @@
 // which avoids templating strings into executeJavaScript.
 import { contextBridge, ipcRenderer } from 'electron';
 
-const TOKEN_KEY = 'freellmapi_dashboard_token';
+const TOKEN_KEY = 'cotell_dashboard_token';
 const arg = process.argv.find((a) => a.startsWith('--freeapi-token='));
 if (arg) {
   try {
