@@ -39,6 +39,17 @@ Aggregate the free tiers from Google, Groq, Cerebras, NVIDIA, Mistral, OpenRoute
 - [Terms of Service review](#terms-of-service-review)
 - [Disclaimer](#disclaimer)
 
+## Commercial forks
+
+This project is MIT licensed, so forks may be modified, distributed, and sold
+as long as the original copyright and license notice stay included in copies or
+substantial portions of the software. Commercial fork maintainers should also
+read [`NOTICE`](./NOTICE) and [`docs/COMMERCIALIZATION.md`](./docs/COMMERCIALIZATION.md).
+
+If you monetize a fork, point premium, catalog, installer, support, and billing
+links at infrastructure you control. The upstream defaults are owned by the
+original FreeLLMAPI project.
+
 ## Why this exists
 
 Every serious AI lab now offers a free tier — a few million tokens a month, a few thousand requests a day. On its own each tier is a toy. Stacked together, they add up to roughly **1.7 billion tokens per month** of working inference capacity, across 100+ models from small-and-fast to reasonably capable.

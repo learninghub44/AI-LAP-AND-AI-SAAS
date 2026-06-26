@@ -1,0 +1,23 @@
+Commercial fork notice
+======================
+
+This repository is a modified fork of FreeLLMAPI.
+
+Original project:
+  FreeLLMAPI
+  https://github.com/tashfeenahmed/freellmapi
+
+Original copyright:
+  Copyright (c) 2026 Tashfeen Ahmed
+
+License:
+  MIT License. See LICENSE.
+
+The MIT License permits use, copying, modification, publishing,
+distribution, sublicensing, and sale of copies of the software, provided the
+copyright notice and permission notice are included in all copies or
+substantial portions of the software.
+
+Commercial fork maintainers should add their own copyright notice here for
+new work while preserving the original notice above.
+

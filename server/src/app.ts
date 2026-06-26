@@ -19,6 +19,7 @@ import { premiumRouter } from './routes/premium.js';
 import { authRouter } from './routes/auth.js';
 import { requireAuth } from './middleware/requireAuth.js';
 import { createProxyRateLimiter } from './middleware/rateLimit.js';
+import { requireSaasAccess } from './services/saas.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -79,6 +80,7 @@ export function createApp() {
   // OpenAI-compatible proxy. Per-IP rate limiting (#35 item #6) runs first so
   // it throttles unauthenticated brute-force / flood attempts before any
   // routing work. Tune via PROXY_RATE_LIMIT_RPM; 0 disables it.
+  app.use('/v1', requireSaasAccess);
   app.use('/v1', createProxyRateLimiter());
   // Anthropic-compatible Messages API (`POST /v1/messages`, `/count_tokens`) for
   // Claude Code and anything else speaking the Anthropic SDK. Mounted BEFORE the
