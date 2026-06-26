@@ -1,11 +1,11 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
-    "builder": "RAILPACK",
-    "buildCommand": "npm run build"
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "npm run start",
+    "startCommand": "node server/dist/index.js",
     "healthcheckPath": "/api/ping",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
