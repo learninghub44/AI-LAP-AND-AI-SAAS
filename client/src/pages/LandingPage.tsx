@@ -1,5 +1,12 @@
-
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+
+const PLAN_SLUGS: Record<string, string> = {
+  Free: 'free',
+  Starter: 'starter-monthly',
+  Pro: 'pro-monthly',
+  Business: 'business-monthly',
+}
 
 const plans = [
   {
@@ -31,7 +38,7 @@ const plans = [
     description: 'For growing teams',
     requests: '10,000 requests',
     tokens: '25M tokens',
-    features: ['All Starter features', 'Advanced models', 'Priority support', 'Analytics dashboard'],
+    features: ['All Starter features', 'Advanced models', 'Priority support', 'Analytics'],
     cta: 'Start Pro',
     highlight: true,
   },
@@ -49,45 +56,132 @@ const plans = [
 ]
 
 const features = [
-  {
-    icon: '⚡',
-    title: 'Blazing Fast',
-    description: 'Sub-second responses powered by the best free AI providers globally.',
-  },
-  {
-    icon: '🔑',
-    title: 'One API Key',
-    description: 'One key, 20+ AI models. No juggling multiple provider accounts.',
-  },
-  {
-    icon: '🇰🇪',
-    title: 'Built for Kenya',
-    description: 'Pay in KES via M-Pesa or card. No USD conversion headaches.',
-  },
-  {
-    icon: '🛡️',
-    title: 'Reliable Routing',
-    description: 'Automatic failover across providers. If one goes down, another takes over.',
-  },
-  {
-    icon: '📊',
-    title: 'Usage Analytics',
-    description: 'Track every request, token, and cost in real time.',
-  },
-  {
-    icon: '🔌',
-    title: 'OpenAI Compatible',
-    description: 'Drop-in replacement. Works with any OpenAI SDK or tool.',
-  },
+  { icon: '⚡', title: 'Blazing Fast', description: 'Sub-second responses powered by the best free AI providers globally.' },
+  { icon: '🔑', title: 'One API Key', description: 'One key, 20+ AI models. No juggling multiple provider accounts.' },
+  { icon: '🇰🇪', title: 'Built for Kenya', description: 'Pay in KES via M-Pesa or card. No USD conversion headaches.' },
+  { icon: '🛡️', title: 'Reliable Routing', description: 'Automatic failover across providers. If one goes down, another takes over.' },
+  { icon: '📊', title: 'Usage Analytics', description: 'Track every request, token, and cost in real time.' },
+  { icon: '🔌', title: 'OpenAI Compatible', description: 'Drop-in replacement. Works with any OpenAI SDK or tool.' },
 ]
 
+type SignupState = 'idle' | 'loading' | 'success' | 'error'
+
+function SignupModal({ plan, onClose }: { plan: typeof plans[0]; onClose: () => void }) {
+  const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
+  const [state, setState] = useState<SignupState>('idle')
+  const [message, setMessage] = useState('')
+  const [apiKey, setApiKey] = useState('')
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email.trim()) return
+    setState('loading')
+    setMessage('')
+    try {
+      const res = await fetch('/api/saas/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), name: name.trim(), planSlug: PLAN_SLUGS[plan.name] }),
+      })
+      const data = await res.json() as { type?: string; apiKey?: string; authorizationUrl?: string; error?: string }
+      if (!res.ok) throw new Error(data.error ?? 'Signup failed')
+
+      if (data.type === 'free') {
+        setApiKey(data.apiKey ?? '')
+        setState('success')
+        setMessage(`You're on the Free plan! Your API key is ready.`)
+      } else if (data.type === 'payment' && data.authorizationUrl) {
+        // Redirect to Paystack checkout
+        window.location.href = data.authorizationUrl
+      }
+    } catch (err) {
+      setState('error')
+      setMessage(err instanceof Error ? err.message : 'Something went wrong')
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-md rounded-2xl border bg-background p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="font-semibold text-lg">Start {plan.name} plan</h2>
+            <p className="text-sm text-muted-foreground">{plan.price}{plan.period}</p>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl leading-none">×</button>
+        </div>
+
+        {state === 'success' ? (
+          <div className="space-y-4">
+            <div className="rounded-lg bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 p-4">
+              <p className="text-sm font-medium text-green-800 dark:text-green-200 mb-2">🎉 Account created!</p>
+              <p className="text-sm text-green-700 dark:text-green-300">{message}</p>
+            </div>
+            {apiKey && (
+              <div className="rounded-lg border bg-muted p-3">
+                <p className="text-xs text-muted-foreground mb-1">Your API key — save it now, shown only once:</p>
+                <code className="text-xs font-mono break-all select-all">{apiKey}</code>
+              </div>
+            )}
+            <button onClick={onClose} className="w-full rounded-lg bg-foreground text-background text-sm font-medium px-4 py-2.5 hover:opacity-80 transition-opacity">
+              Close
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Full name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="Jane Wanjiku"
+                className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Email address <span className="text-red-500">*</span></label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="jane@example.com"
+                className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground"
+              />
+            </div>
+
+            {state === 'error' && (
+              <div className="rounded-lg bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 p-3 text-sm text-red-700 dark:text-red-300">
+                {message}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={state === 'loading'}
+              className="w-full rounded-lg bg-foreground text-background text-sm font-medium px-4 py-2.5 hover:opacity-80 transition-opacity disabled:opacity-50"
+            >
+              {state === 'loading' ? 'Please wait…' : plan.name === 'Free' ? 'Create free account' : `Continue to payment (${plan.price})`}
+            </button>
+            {plan.name !== 'Free' && (
+              <p className="text-xs text-muted-foreground text-center">Secure payment via Paystack · M-Pesa or card accepted</p>
+            )}
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function LandingPage() {
-  
+  const [selectedPlan, setSelectedPlan] = useState<typeof plans[0] | null>(null)
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
       {/* Navbar */}
-      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center h-14 gap-6">
           <div className="flex items-center gap-2">
             <span className="inline-block size-2 rounded-full bg-foreground" />
@@ -96,18 +190,18 @@ export default function LandingPage() {
           <nav className="hidden md:flex items-center gap-6 ml-4">
             <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
             <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
-            <a href="#docs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Docs</a>
+            <Link to="/portal" className="text-sm text-muted-foreground hover:text-foreground transition-colors">My Account</Link>
           </nav>
           <div className="ml-auto flex items-center gap-3">
             <Link to="/dashboard" className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Sign in
+              Admin
             </Link>
-            <a
-              href="#pricing"
+            <button
+              onClick={() => setSelectedPlan(plans[0])}
               className="inline-flex items-center justify-center rounded-lg bg-foreground text-background text-sm font-medium px-4 py-2 hover:opacity-80 transition-opacity"
             >
               Get started
-            </a>
+            </button>
           </div>
         </div>
       </header>
@@ -127,17 +221,17 @@ export default function LandingPage() {
           OpenAI-compatible — works with any existing AI tool or SDK.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <a
-            href="#pricing"
+          <button
+            onClick={() => setSelectedPlan(plans[0])}
             className="inline-flex items-center justify-center rounded-lg bg-foreground text-background text-sm font-medium px-6 py-3 hover:opacity-80 transition-opacity"
           >
             Start free — no card needed
-          </a>
+          </button>
           <Link
-            to="/dashboard"
+            to="/portal"
             className="inline-flex items-center justify-center rounded-lg border text-sm font-medium px-6 py-3 hover:bg-muted transition-colors"
           >
-            Go to dashboard →
+            My account →
           </Link>
         </div>
 
@@ -146,7 +240,7 @@ export default function LandingPage() {
           <div className="text-muted-foreground mb-1"># Drop-in OpenAI replacement</div>
           <div><span className="text-blue-400">from</span> openai <span className="text-blue-400">import</span> OpenAI</div>
           <div className="mt-2">client = OpenAI(</div>
-          <div className="pl-4">base_url=<span className="text-green-400">"https://keen-fascination-production-5c08.up.railway.app/v1"</span>,</div>
+          <div className="pl-4">base_url=<span className="text-green-400">"{window.location.origin}/v1"</span>,</div>
           <div className="pl-4">api_key=<span className="text-green-400">"cotell-your-key-here"</span>,</div>
           <div>)</div>
           <div className="mt-2">response = client.chat.completions.create(</div>
@@ -202,30 +296,28 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Link
-                to="/dashboard"
+              <button
+                onClick={() => setSelectedPlan(plan)}
                 className={`inline-flex items-center justify-center rounded-lg text-sm font-medium px-4 py-2.5 transition-opacity hover:opacity-80 ${
-                  plan.highlight
-                    ? 'bg-background text-foreground'
-                    : 'bg-foreground text-background'
+                  plan.highlight ? 'bg-background text-foreground' : 'bg-foreground text-background'
                 }`}
               >
                 {plan.cta}
-              </Link>
+              </button>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Docs */}
-      <section id="docs" className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
+      {/* Quickstart */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
         <div className="rounded-2xl border bg-muted/40 p-8 sm:p-12">
           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-3">Ready in 60 seconds</h2>
           <p className="text-muted-foreground mb-8">Get your API key, swap the base URL, and you're live.</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {[
               { step: '1', title: 'Sign up', desc: 'Create a free account. No card required.' },
-              { step: '2', title: 'Get your key', desc: 'Copy your cotell-xxx API key from the dashboard.' },
+              { step: '2', title: 'Get your key', desc: 'Your cotell-xxx API key is issued instantly.' },
               { step: '3', title: 'Start building', desc: 'Point your OpenAI SDK to Cotell AI and go.' },
             ].map((s) => (
               <div key={s.step} className="flex gap-4">
@@ -240,12 +332,12 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="mt-8">
-            <Link
-              to="/dashboard"
+            <button
+              onClick={() => setSelectedPlan(plans[0])}
               className="inline-flex items-center justify-center rounded-lg bg-foreground text-background text-sm font-medium px-6 py-3 hover:opacity-80 transition-opacity"
             >
               Create free account →
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -257,15 +349,15 @@ export default function LandingPage() {
             <span className="inline-block size-2 rounded-full bg-foreground" />
             <span className="font-semibold tracking-tight text-sm">Cotell AI</span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Cotell AI. Built in Kenya 🇰🇪
-          </p>
+          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Cotell AI · Built in Kenya 🇰🇪</p>
           <div className="flex gap-4 text-xs text-muted-foreground">
-            <a href="#" className="hover:text-foreground transition-colors">Terms</a>
-            <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
+            <Link to="/portal" className="hover:text-foreground transition-colors">My Account</Link>
+            <a href="mailto:support@cotell.co" className="hover:text-foreground transition-colors">Support</a>
           </div>
         </div>
       </footer>
+
+      {selectedPlan && <SignupModal plan={selectedPlan} onClose={() => setSelectedPlan(null)} />}
     </div>
   )
 }

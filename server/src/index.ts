@@ -5,6 +5,7 @@ import { startHealthChecker } from './services/health.js';
 import { applyProxyUrl, applyProxyEnabled, applyProxyBypass } from './lib/proxy.js';
 import { startCatalogSync } from './services/catalog-sync.js';
 import { installProcessSafetyNet } from './lib/process-safety-net.js';
+import { initSaasDb } from './services/saas-db.js';
 
 const PORT = process.env.PORT ?? 3001;
 // Dual-stack ('::') by default so the dashboard is reachable over both IPv4
@@ -18,6 +19,7 @@ async function main() {
   installProcessSafetyNet();
 
   initDb();
+  await initSaasDb();
 
   // Load the persisted proxy settings from the DB (env var wins if set).
   // Must happen after initDb so the settings table is ready.

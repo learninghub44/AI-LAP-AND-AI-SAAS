@@ -17,6 +17,7 @@ import { healthRouter } from './routes/health.js';
 import { settingsRouter } from './routes/settings.js';
 import { premiumRouter } from './routes/premium.js';
 import { authRouter } from './routes/auth.js';
+import { saasCustomerRouter } from './routes/saas-customer.js';
 import { requireAuth } from './middleware/requireAuth.js';
 import { createProxyRateLimiter } from './middleware/rateLimit.js';
 import { requireSaasAccess } from './services/saas.js';
@@ -64,6 +65,8 @@ export function createApp() {
   // session; everything else under /api/* requires a logged-in dashboard user.
   // The /v1 proxy keeps its own unified-API-key auth and is NOT gated here.
   app.use('/api/auth', authRouter);
+  // Public SaaS customer routes (signup, payment verify, webhook, plans)
+  app.use('/api/saas', saasCustomerRouter);
 
   // API routes — all admin endpoints sit behind requireAuth.
   app.use('/api/keys', requireAuth, keysRouter);

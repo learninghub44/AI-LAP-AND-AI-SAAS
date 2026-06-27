@@ -32,6 +32,7 @@ import EmbeddingDetailPage from '@/pages/EmbeddingDetailPage'
 import AnalyticsPage from '@/pages/AnalyticsPage'
 import PremiumPage from '@/pages/PremiumPage'
 import LandingPage from '@/pages/LandingPage'
+import CustomerPortalPage from '@/pages/CustomerPortalPage'
 
 const queryClient = new QueryClient()
 
@@ -237,6 +238,7 @@ function App() {
       <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/portal" element={<CustomerPortalPage />} />
           <Route path="/dashboard/*" element={
             <AuthGate>
               <div className={`min-h-screen ${isDesktopApp ? 'desktop-backdrop' : 'bg-background'}`}>
