@@ -31,15 +31,16 @@ import MediaDetailPage from '@/pages/MediaDetailPage'
 import EmbeddingDetailPage from '@/pages/EmbeddingDetailPage'
 import AnalyticsPage from '@/pages/AnalyticsPage'
 import PremiumPage from '@/pages/PremiumPage'
+import LandingPage from '@/pages/LandingPage'
 
 const queryClient = new QueryClient()
 
 const navItems = [
-  { to: '/models', labelKey: 'nav.models' },
-  { to: '/playground', labelKey: 'nav.playground' },
-  { to: '/keys', labelKey: 'nav.keys' },
-  { to: '/analytics', labelKey: 'nav.analytics' },
-  { to: '/premium', labelKey: 'nav.premium' },
+  { to: '/dashboard/models', labelKey: 'nav.models' },
+  { to: '/dashboard/playground', labelKey: 'nav.playground' },
+  { to: '/dashboard/keys', labelKey: 'nav.keys' },
+  { to: '/dashboard/analytics', labelKey: 'nav.analytics' },
+  { to: '/dashboard/premium', labelKey: 'nav.premium' },
 ]
 
 function getPreferredDarkMode() {
@@ -234,13 +235,16 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <I18nProvider>
       <BrowserRouter basename={import.meta.env.BASE_URL}>
-        <AuthGate>
-          <div className={`min-h-screen ${isDesktopApp ? 'desktop-backdrop' : 'bg-background'}`}>
-            <Navbar />
-            <main className="max-w-6xl mx-auto px-6 py-8">
-              <Routes>
-                <Route path="/" element={<Navigate to="/models/chat" replace />} />
-                <Route path="/models" element={<Navigate to="/models/chat" replace />} />
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/dashboard/*" element={
+            <AuthGate>
+              <div className={`min-h-screen ${isDesktopApp ? 'desktop-backdrop' : 'bg-background'}`}>
+                <Navbar />
+                <main className="max-w-6xl mx-auto px-6 py-8">
+                  <Routes>
+                    <Route path="/" element={<Navigate to="models/chat" replace />} />
+                    <Route path="/models" element={<Navigate to="models/chat" replace />} />
                 <Route path="/models/chat" element={<FallbackPage />} />
                 <Route path="/models/chat/:id" element={<ModelDetailPage />} />
                 <Route path="/models/fusion" element={<FusionPage />} />
@@ -257,10 +261,12 @@ function App() {
                 <Route path="/premium" element={<PremiumPage />} />
                 <Route path="/test" element={<Navigate to="/playground" replace />} />
                 <Route path="/health" element={<Navigate to="/keys" replace />} />
-              </Routes>
-            </main>
-          </div>
-        </AuthGate>
+                  </Routes>
+                </main>
+              </div>
+            </AuthGate>
+          } />
+        </Routes>
       </BrowserRouter>
       </I18nProvider>
     </QueryClientProvider>
