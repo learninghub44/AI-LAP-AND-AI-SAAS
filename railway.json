@@ -5,7 +5,6 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "node server/dist/index.js",
     "healthcheckPath": "/api/ping",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
