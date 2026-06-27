@@ -12,18 +12,11 @@ import {
 
 export const authRouter = Router();
 
-// Dashboard auth (#35). These routes are mounted BEFORE requireAuth, so
-// /status, /setup and /login are reachable without a session (bootstrap);
-// /logout and /me validate the token themselves.
-
 const credentialsSchema = z.object({
   email: z.string().email('A valid email is required'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
-// ── Brute-force throttle ──────────────────────────────────────────────────
-// Simple in-memory per-email limiter. A local single-user tool doesn't need a
-// distributed store; this just blunts online password guessing.
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 15 * 60 * 1000;
 const attempts = new Map<string, { count: number; lockedUntil: number }>();
@@ -51,31 +44,87 @@ function bearer(req: Request): string | undefined {
     ?? (req.headers['x-dashboard-token'] as string | undefined);
 }
 
-// Has the dashboard been set up yet, and is this caller authenticated?
+/**
+ * Setup is locked behind ADMIN_EMAIL + ADMIN_PASSWORD env vars.
+ * If those aren't set, setup is permanently disabled (closed system).
+ * This prevents anyone from creating an admin account on a public deployment.
+ */
+function getAdminCredentials(): { email: string; password: string } | null {
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD?.trim();
+  if (!email || !password || password.length < 8) return null;
+  return { email, password };
+}
+
 authRouter.get('/status', (req: Request, res: Response) => {
   const session = validateSession(bearer(req));
+  const adminCreds = getAdminCredentials();
   res.json({
-    needsSetup: userCount() === 0,
+    // Only show setup screen if admin creds are configured AND no users exist yet
+    needsSetup: !!adminCreds && userCount() === 0,
     authenticated: !!session,
     email: session?.email ?? null,
   });
 });
 
-// First-run account creation. Only allowed while there are zero users, so it
-// can't be used to add accounts once the dashboard is claimed.
+/**
+ * POST /api/auth/setup
+ * Only works when:
+ *   1. ADMIN_EMAIL + ADMIN_PASSWORD env vars are set
+ *   2. No users exist yet (first run)
+ *   3. The submitted credentials match the env vars exactly
+ */
 authRouter.post('/setup', (req: Request, res: Response) => {
+  const adminCreds = getAdminCredentials();
+
+  // No env vars set = setup permanently disabled
+  if (!adminCreds) {
+    res.status(403).json({
+      error: {
+        message: 'Admin setup is disabled. Set ADMIN_EMAIL and ADMIN_PASSWORD environment variables to enable it.',
+        type: 'setup_disabled',
+      },
+    });
+    return;
+  }
+
+  // Already set up
   if (userCount() > 0) {
     res.status(409).json({ error: { message: 'Setup already completed. Use login instead.', type: 'setup_complete' } });
     return;
   }
+
   const parsed = credentialsSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: { message: parsed.error.errors.map(e => e.message).join(', ') } });
     return;
   }
-  const user = createUser(parsed.data.email, parsed.data.password);
-  const token = createSession(user.userId);
-  res.status(201).json({ token, email: user.email });
+
+  // Credentials must match env vars exactly
+  const submittedEmail = parsed.data.email.trim().toLowerCase();
+  if (submittedEmail !== adminCreds.email || parsed.data.password !== adminCreds.password) {
+    recordFailure(submittedEmail);
+    res.status(401).json({
+      error: {
+        message: 'Invalid credentials. Admin email and password must match the server configuration.',
+        type: 'authentication_error',
+      },
+    });
+    return;
+  }
+
+  try {
+    const user = createUser(parsed.data.email, parsed.data.password);
+    const token = createSession(user.userId);
+    res.status(201).json({ token, email: user.email });
+  } catch (err: unknown) {
+    const e = err as { code?: string; message?: string };
+    if (e?.code === 'email_taken') {
+      res.status(409).json({ error: { message: 'Setup already completed.', type: 'setup_complete' } });
+    } else {
+      res.status(500).json({ error: { message: e?.message ?? 'Setup failed' } });
+    }
+  }
 });
 
 authRouter.post('/login', (req: Request, res: Response) => {
@@ -94,7 +143,6 @@ authRouter.post('/login', (req: Request, res: Response) => {
   const user = verifyCredentials(email, password);
   if (!user) {
     recordFailure(email);
-    // Same message whether the email exists or not — don't leak which.
     res.status(401).json({ error: { message: 'Invalid email or password', type: 'authentication_error' } });
     return;
   }
