@@ -7,7 +7,7 @@ import { startCatalogSync } from './services/catalog-sync.js';
 import { installProcessSafetyNet } from './lib/process-safety-net.js';
 import { initSaasDb } from './services/saas-db.js';
 
-const PORT = process.env.PORT ?? 3001;
+const PORT = process.env.PORT ?? 3000;
 // Dual-stack ('::') by default so the dashboard is reachable over both IPv4
 // and IPv6 (e.g. IPv6-enabled Docker networks — #180). Hosts with IPv6
 // disabled fall back to IPv4-only below; HOST overrides the default outright.
